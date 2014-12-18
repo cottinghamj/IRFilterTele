@@ -42,12 +42,12 @@ class Mean(_name:String) extends Kernel(_name:String)
 							//	Optimization:: Does it just take up too much time. Maybe we can just set it equal to empty array
 			count = 1
 			i = 0
-//			while (i < pixels) {		//	Clear the whole 1600 size vector
-//				collectionOfMeans(i) = 0		//REPLACED WITH OPTIMIZATION
-//				i += 1
-//			}
+			while (i < pixels) {		//	Clear the whole 1600 size vector
+				collectionOfMeans(i) = 0		//REPLACED WITH OPTIMIZATION
+				i += 1
+			}
 
-			collectionOfMeans = emptyCollectionOfMeans	// OPTIMIZATION MADE -- O(1) as opposed to O(n)
+//			collectionOfMeans = emptyCollectionOfMeans	// OPTIMIZATION MADE -- O(1) as opposed to O(n)
 			state = 1			//	Done clearing, back to taking in new values
 		}
 
