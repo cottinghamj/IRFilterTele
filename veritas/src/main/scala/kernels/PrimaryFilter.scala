@@ -17,40 +17,44 @@ import scalapipe.kernels._
 
 class PrimaryFilter(_name:String) extends Kernel(_name:String)
 {
+
   // to make this thing type parameterizable.
   val typ = UNSIGNED16
-  // ------== Data sigs ==------
-  val pixelIn = input(typ, 'pixelIn)
-  val pixelOut = output(typ, 'pixelOut)
 
-  // ------== Control sigs ==------
+  val pixelIn = input(typ, 'pixelIn)	// INPUT
+
+  val pixelOut = output(typ, 'pixelOut) // OUTPUT
+
   val lowThreshIn = input(typ, 'lowThreshIn)
   val highThreshIn = input(typ, 'highThreshIn)
 
-  // ------== Parameters ==------
-  // The number of frames between reloading threshold values
+ 					 // The number of frames between reloading threshold values
   val refreshRate = config(UNSIGNED32, 'outputCount, 1000)
-  // Adding 2 because border extension.
+ 
+							 // Adding 2 because border extension.
   val width = 2 + config(UNSIGNED32, 'width, 40)
   val height = 2 + config(UNSIGNED32, 'height, 40)
   
-  // ------== Locals ==------
-  // Coordinates of pixel being read in
+ 					 // Coordinates of pixel being read in
   val x = local(UNSIGNED32, 0)
   val y = local(UNSIGNED32, 0)
-  // Index of current frame; used to determine when new threshold
-  //    values should be read in.
+
+ 					 // Index of current frame; used to determine when new threshold
+ 					 //    values should be read in.
   val frameCnt = local(UNSIGNED32, 0)
 
-  // TODO FIXME -- 42 == row width, however, there is no point in having
-  //          a 'width' parameter if I put this magic number in.
+ 				 // TODO FIXME -- 42 == row width, however, there is no point in having
+ 				 //          a 'width' parameter if I put this magic number in.
   val vectorSize = 42 * 2 + 2
-  // TODO FIXME -- This _should_ be width * height. Unfortunately, it's
-  //          not being nice about that.
+
+ 				 // TODO FIXME -- This _should_ be width * height. Unfortunately, it's
+  				 //          not being nice about that.
   val imgSize = 42 * 42
-  // Circular buffer of the last vectorSize pixels read in.
+
+  					// Circular buffer of the last vectorSize pixels read in.
   val pixelBuf = local(Vector(typ, vectorSize))
-  // Pointer into the circular buffer.
+  
+					// Pointer into the circular buffer.
   val bufPtr = local(UNSIGNED8, 0)
 
   // the location in the circular buffer of the pixel in the middle
@@ -97,54 +101,76 @@ class PrimaryFilter(_name:String) extends Kernel(_name:String)
     // If this ends up being a bottleneck or using a multiplier,
     //  it only really modularly increments, so that can be changed.
     mainPixLoc = (y - 1) * width + (x - 1)
-    // the pixel to filter
-    if ((bufPtr + width + 1) >= vectorSize)
+ 
+   // the pixel to filter
+    if ((bufPtr + width + 1) >= vectorSize){
       midMid = pixelBuf ((bufPtr + width + 1) - vectorSize)
-    else
+    }else{
       midMid = pixelBuf (bufPtr + width + 1)
+    }
+
     midMidLo = lowThreshBuf (mainPixLoc)
     midMidHi = highThreshBuf (mainPixLoc)
     // top row
     upperLeft = pixelBuf (bufPtr)
     upperLeftHi = highThreshBuf (mainPixLoc - width - 1)
-    if ((bufPtr + 1) == vectorSize)
+
+    if ((bufPtr + 1) == vectorSize){
       upperMid = pixelBuf (0)
-    else
+    }else{
       upperMid = pixelBuf (bufPtr + 1)
+    }
+
     upperMidHi = highThreshBuf (mainPixLoc - width)
-    if ((bufPtr + 2) >= vectorSize)
+
+    if ((bufPtr + 2) >= vectorSize){
       upperRight = pixelBuf ((bufPtr + 2) - vectorSize)
-    else
+    }else{
       upperRight = pixelBuf (bufPtr + 2)
+    }
+
     upperRightHi = highThreshBuf (mainPixLoc - width + 1)
+
     // middle row
-    if ((bufPtr + width) >= vectorSize)
+    if ((bufPtr + width) >= vectorSize){
       midLeft = pixelBuf ((bufPtr + width) - vectorSize)
-    else
+    }else{
       midLeft = pixelBuf (bufPtr + width)
+    }
+
     midLeftHi = highThreshBuf (mainPixLoc - 1)
-    if ((bufPtr + width + 2) >= vectorSize)
+
+    if ((bufPtr + width + 2) >= vectorSize){
       midRight = pixelBuf ((bufPtr + width + 2) - vectorSize)
-    else
+    }else{
       midRight = pixelBuf (bufPtr + width + 2)
+    }
+
     midRightHi = highThreshBuf (mainPixLoc + 1)
+
     // bottom row
-    if (bufPtr == 0 || bufPtr == 1)
+    if (bufPtr == 0 || bufPtr == 1){
       lowerLeft = pixelBuf (bufPtr + vectorSize - 2)
-    else
+    }else{
       lowerLeft = pixelBuf (bufPtr - 2)
+    }
+    
     lowerLeftHi = highThreshBuf (mainPixLoc + width - 1)
-    if (bufPtr == 0)
+    if (bufPtr == 0){
       lowerMid = pixelBuf (vectorSize - 1)
-    else
+    }else{
       lowerMid = pixelBuf (bufPtr - 1)
+    }
+
     lowerMidHi = highThreshBuf (mainPixLoc + width)
+   
     //lowerRight
     lowerRightHi = highThreshBuf (mainPixLoc + width + 1)
-    if (midMid < midMidLo)
-    {
+   
+    if (midMid < midMidLo) {
       pixelOut = 0
     }
+   
     // Checks lowerRight first because that doesn't require a
     // memory access.
     else if (
@@ -171,19 +197,23 @@ class PrimaryFilter(_name:String) extends Kernel(_name:String)
 
   // updates pixel buffer ptr & pixel buffer
   pixelBuf (bufPtr) = lowerRight
-  if ((bufPtr + 1) == vectorSize)
+  if ((bufPtr + 1) == vectorSize){
     bufPtr = 0
-  else
+  }else{
     bufPtr = bufPtr + 1
+  }
+  
   // updates x and y pointers
-  if ((x + 1) == width)
+  if ((x + 1) == width){
     x = 0
-  else
+  }else{
     x = (x + 1)
-  if (x == 0)
-  {
-    if ((y + 1) == height)
-    {
+  }
+
+  if (x == 0){
+
+    if ((y + 1) == height){
+
       y = 0
       // updates frame index
       if ((frameCnt + 1) == refreshRate)
