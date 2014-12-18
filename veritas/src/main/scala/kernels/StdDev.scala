@@ -25,7 +25,7 @@ class StdDev(_name:String) extends Kernel(_name:String)
 	val outputCount = config(UNSIGNED32, 'outputCount, 1)
 
 	val count = local(UNSIGNED32, 0)
-	val means = local(Vector(FLOAT32, 1600))
+	val containerOfMeans = local(Vector(FLOAT32, 1600))
 	val stdDevs = local(Vector(FLOAT32, 1600))
 	val temp = local(FLOAT32, 0)
 	val tempData = local(UNSIGNED16, 0)
@@ -42,7 +42,7 @@ class StdDev(_name:String) extends Kernel(_name:String)
 			count = 1
 			i = 0
 			while (i < pixelNum) {
-				means(i) = mean
+				containerOfMeans(i) = mean
 				stdDevs(i) = 0
 				i += 1
 			}
@@ -55,7 +55,7 @@ class StdDev(_name:String) extends Kernel(_name:String)
 				while (i < pixelNum) {
 					tempData = pixelData
 					temp = cast(tempData, FLOAT32)
-					stdDevs(i) += ((temp - means(i)) * (temp - means(i)))
+					stdDevs(i) += ((temp - containerOfMeans(i)) * (temp - containerOfMeans(i)))
 					i += 1
 				}
 				count += 1

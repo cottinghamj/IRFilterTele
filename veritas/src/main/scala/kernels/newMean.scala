@@ -15,7 +15,7 @@ import scalapipe.dsl._
 // config parameters. This is done because the mean module is expected
 // to only be used to process 40x40 pixel images.
 
-class Mean(_name:String) extends Kernel(_name:String)
+class newMean(_name:String) extends Kernel(_name:String)
 {
 	val typ = UNSIGNED16
 	
