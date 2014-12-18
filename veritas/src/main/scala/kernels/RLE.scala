@@ -23,15 +23,16 @@ class RunLengthEncode(_name:String) extends Kernel(_name:String)
                                   // to pixel input 
 	pixel = pixelData
 
-	if (pixel == 0) {
+	if (pixel == 0) {		// pixelData was not >0 so 
 		if (prevZero == 0) {
 			prevZero = 1
-			runLength += 1
+//			runLength += 1
 			encoded_data = 0
 		}
-		else {
-			runLength += 1
-		}
+//		else {
+//			runLength += 1
+//		}
+		runLength += 1
 	}
 	else {
 		if (prevZero == 0) {
@@ -53,4 +54,4 @@ class RunLengthEncode(_name:String) extends Kernel(_name:String)
 		}	
 		prevZero = 0	
 	}
-}
+
