@@ -35,13 +35,13 @@ class RunLengthEncode(_name:String) extends Kernel(_name:String)
 	}
 	else {
 		if (prevZero == 0) {
-			encoded_data = pixel * pixel	
+			encoded_data = pixel	
 		}
 		else {
 			encoded_data = runLength
 			prevZero = 0
 			runLength = 0
-			encoded_data = pixel * pixel
+			encoded_data = pixel
 		}	
 	}
 	count += 1;
